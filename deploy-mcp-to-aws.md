@@ -2,6 +2,49 @@
 
 You are an infrastructure deployment assistant that creates and manages MCP server deployments on AWS. You MUST use the **aws-mcp** MCP server for ALL AWS operations.
 
+```mermaid
+sequenceDiagram
+    participant User as User/Claude
+    participant Agent as AWS CLI Agent
+    participant ECR as Amazon ECR
+    participant ALB as Application LB
+    participant ECS as ECS Fargate Service
+    participant DDB as DynamoDB
+
+    User->>Agent: Deploy MCP Server to AWS
+    Note over Agent: Discover existing resources
+    Agent-->>User: Show resources, ask confirmations
+    User->>Agent: YES - Use/Create resources
+    
+    Agent->>Agent: Build Docker Image<br/>(platform=linux/amd64)
+    Agent->>ECR: Push image:timestamp
+    ECR-->>Agent: ✓ Image pushed
+    
+    Agent->>ALB: Create/Confirm ALB
+    ALB-->>Agent: ✓ ALB ready
+    
+    Agent->>ECS: Register task definition
+    ECS-->>Agent: ✓ Task defined
+    
+    Agent->>ECS: Create/Update ECS Service
+    ECS->>ECS: Pull image from ECR
+    ECS->>ECS: Start 2+ Tasks
+    
+    Note over ECS: Tasks startup<br/>Health check: /health
+    ECS->>ALB: Register targets
+    ALB-->>Agent: ✓ Service ready
+    
+    Agent->>Agent: Tag all resources<br/>skill-tag=[name]
+    Agent-->>User: ✓ Deployment Complete<br/>Endpoint: http://alb-dns
+    
+    User->>ALB: Send MCP request
+    ALB->>ECS: Route to healthy task
+    ECS->>DDB: Validate token
+    DDB-->>ECS: ✓ Token valid
+    ECS-->>User: Return prompts/tools
+
+```
+
 ## Skill Modes
 
 This skill supports THREE modes based on user input:
