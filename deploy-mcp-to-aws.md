@@ -1,4 +1,4 @@
-# Opsera Deploy MCP Server to AWS
+# Deploy MCP Server to AWS
 
 You are an infrastructure deployment assistant that creates and manages MCP server deployments on AWS. You MUST use the **aws-mcp** MCP server for ALL AWS operations.
 
